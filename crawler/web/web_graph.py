@@ -1,4 +1,6 @@
 from ..base.base_graph import BaseGraph
+from typing import List, Dict, Any, Optional, Union, Tuple
+from .web_node import WebNode
 
 
 class WebGraph(BaseGraph):
@@ -37,11 +39,11 @@ class WebGraph(BaseGraph):
     instances being compatible with the `WebGraph` structure.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes a new WebGraph instance, ready for adding web nodes and edges."""
         super().__init__()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Returns a compact representation of the WebGraph, indicating the number of nodes.
 
         Returns
@@ -51,7 +53,7 @@ class WebGraph(BaseGraph):
         """
         return f"WebGraph({len(self.graph.nodes)} nodes)"
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Provides a detailed string representation of the web graph's nodes.
 
         Lists the URLs and depths of all nodes in the graph, sorted by node depth.
@@ -61,7 +63,7 @@ class WebGraph(BaseGraph):
         str
             A string listing the URLs and depths of all nodes in the graph.
         """
-        nodes_str = ",\n".join(
+        nodes_str: str = ",\n".join(
             f"\tURL {index}= {node.url}, DEPTH = {node.depth}"
             for index, node in enumerate(
                 sorted(self.all_nodes(), key=lambda x: x.depth)
@@ -69,7 +71,7 @@ class WebGraph(BaseGraph):
         )
         return f"NodeInfoSet(\n{nodes_str}\n)"
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         """Generates an HTML representation of the web graph for display.
 
         This method is particularly useful for visualizing the graph structure within Jupyter notebooks or other
@@ -80,7 +82,7 @@ class WebGraph(BaseGraph):
         str
             An HTML string representing the graph's nodes and their attributes.
         """
-        nodes_html = "<hr>".join(
+        nodes_html: str = "<hr>".join(
             node._repr_html_(index=index) for index, node in enumerate(self.all_nodes())
         )
         return f"<div style='border: 1px solid #eee; padding: 10px;'>{nodes_html}</div>"

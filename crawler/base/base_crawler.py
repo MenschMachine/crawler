@@ -1,5 +1,6 @@
 from collections import deque
 from abc import ABC, abstractmethod
+from typing import List, Deque, Tuple, Any, Optional
 
 
 class BaseCrawler(ABC):
@@ -21,12 +22,12 @@ class BaseCrawler(ABC):
         Performs the crawling process starting from a given node up to a specified depth.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes the BaseCrawler instance."""
         super().__init__()
 
     @abstractmethod
-    def get_node(self, node_id):
+    def get_node(self, node_id: str) -> 'BaseNode':
         """Retrieves a node from the graph.
 
         Parameters
@@ -42,7 +43,7 @@ class BaseCrawler(ABC):
         pass
 
     @abstractmethod
-    def start_new_crawling_session(self, start_node_id):
+    def start_new_crawling_session(self, start_node_id: str) -> 'BaseGraph':
         """Starts a new crawling session from a given node.
 
         Parameters
@@ -58,7 +59,7 @@ class BaseCrawler(ABC):
         pass
 
     @abstractmethod
-    def visit_node_neighborhood(self, node):
+    def visit_node_neighborhood(self, node: 'BaseNode') -> List['BaseNode']:
         """Retrieves the neighborhood of a given node.
 
         Parameters
@@ -73,7 +74,7 @@ class BaseCrawler(ABC):
         """
         pass
 
-    def crawl(self, start_node_id, max_depth=1):
+    def crawl(self, start_node_id: str, max_depth: int = 1) -> 'BaseGraph':
         """Performs the crawling process using Breadth-First Search (BFS).
 
         Starting from a specified node, this method explores neighboring nodes up to a given depth, creating a
@@ -91,16 +92,16 @@ class BaseCrawler(ABC):
         BaseGraph
             The subgraph created during the crawling process, containing nodes and edges explored.
         """
-        start_node = self.get_node(start_node_id)
+        start_node: 'BaseNode' = self.get_node(start_node_id)
 
-        visiting_nodes = deque()
+        visiting_nodes: Deque[Tuple['BaseNode', int]] = deque()
         visiting_nodes.append((start_node, 0))
 
-        crawl_subgraph = self.start_new_crawling_session(start_node_id)
+        crawl_subgraph: 'BaseGraph' = self.start_new_crawling_session(start_node_id)
 
         while len(visiting_nodes) > 0:
             current_node, current_depth = visiting_nodes.popleft()
-            new_depth = current_depth + 1
+            new_depth: int = current_depth + 1
 
             if new_depth > max_depth:
                 continue

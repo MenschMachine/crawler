@@ -1,5 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+from typing import Dict, List, Any, Optional, Union, TypeVar, Type, Dict, Set, Tuple
 
 # Assuming save_content_to_multiple_files and save_content_to_single_file
 # are defined elsewhere
@@ -7,6 +8,7 @@ from ..utils.file_utils import (
     save_content_to_multiple_files,
     save_content_to_single_file,
 )
+from .base_node import BaseNode
 
 
 class BaseGraph:
@@ -40,11 +42,11 @@ class BaseGraph:
         Combines the markdown representations of all graph nodes and saves them to a single file.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes a new instance of BaseGraph."""
-        self.graph = nx.DiGraph()
+        self.graph: nx.DiGraph = nx.DiGraph()
 
-    def add_node(self, node):
+    def add_node(self, node: BaseNode) -> None:
         """Adds a node to the graph.
 
         Parameters
@@ -54,7 +56,7 @@ class BaseGraph:
         """
         self.graph.add_node(node.id, node=node)
 
-    def add_edge(self, u, v, **attributes):
+    def add_edge(self, u: BaseNode, v: BaseNode, **attributes: Any) -> None:
         """Adds an edge between two nodes in the graph, with optional attributes.
 
         Parameters
@@ -70,7 +72,7 @@ class BaseGraph:
             return
         self.graph.add_edge(u.id, v.id, **attributes)
 
-    def get_node(self, node_id):
+    def get_node(self, node_id: Any) -> BaseNode:
         """Retrieves a node from the graph by its identifier.
 
         Parameters
@@ -85,7 +87,7 @@ class BaseGraph:
         """
         return self.graph.nodes[node_id]["node"]
 
-    def all_nodes(self):
+    def all_nodes(self) -> List[BaseNode]:
         """Returns a list of all nodes in the graph.
 
         Returns
@@ -95,7 +97,7 @@ class BaseGraph:
         """
         return [node["node"] for node in self.graph.nodes.values()]
 
-    def __contains__(self, node):
+    def __contains__(self, node: BaseNode) -> bool:
         """Checks if a node is in the graph.
 
         Parameters
@@ -110,14 +112,14 @@ class BaseGraph:
         """
         return node.id in self.graph.nodes
 
-    def visualize(self):
+    def visualize(self) -> None:
         """Visualizes the graph using matplotlib.
 
         This method generates a visual representation of the graph, displaying nodes, edges, and
         optionally labels.
         """
         # Prepare node labels based on WebNode IDs
-        node_labels = {node.id: f"{idx}" for idx, node in enumerate(self.all_nodes())}
+        node_labels: Dict[Any, str] = {node.id: f"{idx}" for idx, node in enumerate(self.all_nodes())}
 
         # Set up the figure layout
         fig, ax = plt.subplots(figsize=(15, 8))
@@ -162,10 +164,10 @@ class BaseGraph:
         )
 
         # Prepare and show the URL mapping on the right
-        textstr = "\n".join(
+        textstr: str = "\n".join(
             [f"{idx}: {node.id} ({node.url})" for idx, node in enumerate(self.all_nodes())]
         )
-        props = dict(boxstyle="round", facecolor="wheat", alpha=0.5)
+        props: Dict[str, Any] = dict(boxstyle="round", facecolor="wheat", alpha=0.5)
 
         # Add a side subplot for URL mapping
         ax_mapping = plt.subplot(122)
@@ -182,7 +184,7 @@ class BaseGraph:
 
         plt.show()
 
-    def to_markdown(self):
+    def to_markdown(self) -> Dict[str, str]:
         """Converts all graph nodes to a markdown text dictionary.
 
         Returns
@@ -191,14 +193,14 @@ class BaseGraph:
             A dictionary where keys are URLs (assuming each node has a URL attribute) and values are the markdown
             representation of nodes.
         """
-        url_text_dict = {}
+        url_text_dict: Dict[str, str] = {}
         for node in self.all_nodes():
             url_text_dict[node.url] = (
                 node.to_markdown()
             )  # Assuming each node has a 'to_markdown' method
         return url_text_dict
 
-    def save_to_multiple_files(self, directory="output"):
+    def save_to_multiple_files(self, directory: str = "output") -> None:
         """Saves the graph nodes' markdown representations to multiple files in the specified
         directory.
 
@@ -207,10 +209,10 @@ class BaseGraph:
         directory : str, optional
             The directory where the files will be saved. Default is "output".
         """
-        url_text_dict = self.to_markdown()
+        url_text_dict: Dict[str, str] = self.to_markdown()
         save_content_to_multiple_files(url_text_dict, directory)
 
-    def save_to_single_file(self, directory="output", filename="combined_output.md"):
+    def save_to_single_file(self, directory: str = "output", filename: str = "combined_output.md") -> None:
         """Combines the markdown representations of all graph nodes and saves them to a single file.
 
         Parameters
@@ -220,5 +222,5 @@ class BaseGraph:
         filename : str, optional
             The name of the output file. Default is "combined_output.md".
         """
-        url_text_dict = self.to_markdown()
+        url_text_dict: Dict[str, str] = self.to_markdown()
         save_content_to_single_file(url_text_dict, directory, filename)

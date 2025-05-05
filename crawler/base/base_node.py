@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any, Optional, Union, TypeVar, Type
 
 
 class BaseNode(ABC):
@@ -29,7 +30,7 @@ class BaseNode(ABC):
         Checks equality with another node based on identifiers.
     """
 
-    def __init__(self, node_id):
+    def __init__(self, node_id: Any) -> None:
         """Initializes the BaseNode instance with the provided identifier.
 
         Parameters
@@ -37,12 +38,12 @@ class BaseNode(ABC):
         node_id : Any
             The unique identifier of the node.
         """
-        self._node_id = node_id
-        self._depth = 0
-        self._parent = None
+        self._node_id: Any = node_id
+        self._depth: int = 0
+        self._parent: Optional['BaseNode'] = None
 
     @property
-    def id(self):
+    def id(self) -> Any:
         """The unique identifier of the node.
 
         Returns
@@ -53,7 +54,7 @@ class BaseNode(ABC):
         return self._node_id
 
     @property
-    def depth(self):
+    def depth(self) -> int:
         """The depth of the node within the graph.
 
         Returns
@@ -64,7 +65,7 @@ class BaseNode(ABC):
         return self._depth
 
     @depth.setter
-    def depth(self, value):
+    def depth(self, value: int) -> None:
         """Sets the depth of the node.
 
         Parameters
@@ -75,7 +76,7 @@ class BaseNode(ABC):
         self._depth = value
 
     @property
-    def parent(self):
+    def parent(self) -> Optional['BaseNode']:
         """The parent node of this node.
 
         Returns
@@ -86,7 +87,7 @@ class BaseNode(ABC):
         return self._parent
 
     @parent.setter
-    def parent(self, value):
+    def parent(self, value: Optional['BaseNode']) -> None:
         """Sets the parent node.
 
         Parameters
@@ -97,15 +98,20 @@ class BaseNode(ABC):
         self._parent = value
 
     @abstractmethod
-    def to_markdown(self):
+    def to_markdown(self) -> str:
         """Converts the node's content to Markdown format.
 
         This method should be implemented by subclasses to specify how the node's information should
         be represented in Markdown.
+
+        Returns
+        -------
+        str
+            The Markdown representation of the node's content.
         """
         pass
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """Computes the hash of the node based on its unique identifier.
 
         Returns
@@ -115,7 +121,7 @@ class BaseNode(ABC):
         """
         return hash(self.id)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """Checks whether this node is equal to another node, based on their identifiers.
 
         Parameters

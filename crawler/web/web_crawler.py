@@ -1,6 +1,7 @@
 from .web_node import WebNode
 from .web_graph import WebGraph
 from ..base.base_crawler import BaseCrawler
+from typing import List, Optional, Union, Dict, Any, Tuple
 
 
 class WebCrawler(BaseCrawler):
@@ -43,7 +44,7 @@ class WebCrawler(BaseCrawler):
     5  # Assuming the start_node has 5 allowable linked pages.
     """
 
-    def __init__(self, allowed_domains=[]):
+    def __init__(self, allowed_domains: List[str] = None) -> None:
         """Initializes the WebCrawler with specified domain restrictions.
 
         Parameters
@@ -52,10 +53,10 @@ class WebCrawler(BaseCrawler):
             Specifies the domains that the crawler is allowed to access. Defaults to an empty list, implying no restrictions.
         """
         super().__init__()
-        self.base_allowed_domains = allowed_domains
-        self.session_allowed_domains = []
+        self.base_allowed_domains: List[str] = allowed_domains if allowed_domains is not None else []
+        self.session_allowed_domains: List[str] = []
 
-    def get_node(self, node_id):
+    def get_node(self, node_id: str) -> WebNode:
         """Retrieves a WebNode instance corresponding to a given node identifier (URL).
 
         Parameters
@@ -70,7 +71,7 @@ class WebCrawler(BaseCrawler):
         """
         return WebNode(node_id)
 
-    def start_new_crawling_session(self, start_node_id, restrict_to_domain=True):
+    def start_new_crawling_session(self, start_node_id: str, restrict_to_domain: bool = True) -> WebGraph:
         """Initializes a new crawling session, with an option to restrict the session to the domain
         of the start node.
 
@@ -86,16 +87,16 @@ class WebCrawler(BaseCrawler):
         WebGraph
             An initialized WebGraph instance for the new crawling session.
         """
-        start_node = self.get_node(start_node_id)
+        start_node: WebNode = self.get_node(start_node_id)
         if restrict_to_domain:
             self.session_allowed_domains = [start_node.domain]
         else:
             self.session_allowed_domains = []
-        crawl_subgraph = WebGraph()
+        crawl_subgraph: WebGraph = WebGraph()
         crawl_subgraph.add_node(start_node)
         return crawl_subgraph
 
-    def in_allowed_domain(self, url):
+    def in_allowed_domain(self, url: str) -> bool:
         """Determines if the given URL is within the crawler's allowed domains for the current
         session.
 
@@ -109,12 +110,12 @@ class WebCrawler(BaseCrawler):
         bool
             True if the URL is within the allowed domains, False otherwise.
         """
-        all_allowed_domains = self.base_allowed_domains + self.session_allowed_domains
+        all_allowed_domains: List[str] = self.base_allowed_domains + self.session_allowed_domains
         return len(all_allowed_domains) == 0 or any(
             domain in url for domain in all_allowed_domains
         )
 
-    def visit_node_neighborhood(self, node):
+    def visit_node_neighborhood(self, node: WebNode) -> List[WebNode]:
         """Fetches the web page corresponding to the given node, extracts links, and returns
         neighboring nodes within allowed domains.
 
@@ -128,15 +129,15 @@ class WebCrawler(BaseCrawler):
         list of WebNode
             A list of WebNode instances representing the allowable neighboring nodes linked from the given node.
         """
-        node_neighbors = node.fetch_connected_hyperlinks()
-        allowed_neighbors = [
+        node_neighbors: List[str] = node.fetch_connected_hyperlinks()
+        allowed_neighbors: List[WebNode] = [
             WebNode(neighbor)
             for neighbor in node_neighbors
             if self.in_allowed_domain(neighbor)
         ]
         return allowed_neighbors
 
-    def crawl_multiple_urls(self, urls, max_depth=1):
+    def crawl_multiple_urls(self, urls: List[str], max_depth: int = 1) -> WebGraph:
         """Performs a crawl starting from multiple URLs, building a single graph.
 
         This method iteratively crawls each URL in the provided list, adding the resulting subgraphs to a
@@ -154,8 +155,8 @@ class WebCrawler(BaseCrawler):
         WebGraph
             The combined `WebGraph` containing all nodes and edges explored from the provided URLs.
         """
-        crawl_subgraph = WebGraph()
+        crawl_subgraph: WebGraph = WebGraph()
         for url in urls:
-            subgraph = self.crawl(url, max_depth=max_depth)
+            subgraph: WebGraph = self.crawl(url, max_depth=max_depth)
             crawl_subgraph.graph.update(subgraph.graph)  # Merge subgraphs
         return crawl_subgraph

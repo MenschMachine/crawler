@@ -3,6 +3,7 @@ import requests
 import html2text
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
+from typing import List, Dict, Set, Optional, Any, Union
 
 from ..base.base_node import BaseNode
 
@@ -55,7 +56,7 @@ class WebNode(BaseNode):
     >>> print(markdown_content[:100])  # Print the first 100 characters of the Markdown content
     """
 
-    def __init__(self, url, **attributes):
+    def __init__(self, url: str, **attributes: Any) -> None:
         """Initializes a WebNode instance representing a web page.
 
         Parameters
@@ -66,10 +67,10 @@ class WebNode(BaseNode):
             Additional attributes for the web node, such as 'depth' in the crawl graph, passed as keyword arguments.
         """
         super().__init__(url, **attributes)
-        self._content_fetched = False
-        self.cache = {}  # Add a cache dictionary to the WebNode
+        self._content_fetched: bool = False
+        self.cache: Dict[str, BeautifulSoup] = {}  # Add a cache dictionary to the WebNode
 
-    def _fetch_and_parse_html(self):
+    def _fetch_and_parse_html(self) -> None:
         if self.url not in self.cache:  # Check if the URL is in the cache
             try:
                 response = requests.get(self.url, timeout=5)
@@ -90,7 +91,7 @@ class WebNode(BaseNode):
             logging.info("Retrieved %s from cache", str(self.url))
 
     @property
-    def soup(self):
+    def soup(self) -> BeautifulSoup:
         """A property that ensures the HTML content is fetched and parsed upon first access. It
         returns a BeautifulSoup object containing the parsed HTML of the web page. This allows for
         lazy loading of web page content, minimizing unnecessary network operations.
@@ -105,7 +106,7 @@ class WebNode(BaseNode):
             self._fetch_and_parse_html()
         return self.cache[self.url]
 
-    def fetch_connected_hyperlinks(self):
+    def fetch_connected_hyperlinks(self) -> List[str]:
         """Extracts and returns all hyperlinks found within the web page's HTML content. It parses
         the `a` tags to extract the `href` attribute values, resolving them to absolute URLs.
 
@@ -118,7 +119,7 @@ class WebNode(BaseNode):
         if self.soup is None:
             return []
 
-        urls = set()
+        urls: Set[str] = set()
         for link in self.soup.find_all("a"):
             href = link.get("href")
 
@@ -131,15 +132,15 @@ class WebNode(BaseNode):
             if href and not href.startswith("#"):
                 full_url = urljoin(self.url, href)
                 urls.add(full_url)
-        urls = list(urls)
-        urls.sort()
+        urls_list: List[str] = list(urls)
+        urls_list.sort()
 
-        for idx, url in enumerate(urls):
+        for idx, url in enumerate(urls_list):
             logging.debug("\tConnected hyperlink %d: %s", idx, str(url))
 
-        return urls
+        return urls_list
 
-    def convert_to_markdown(self):
+    def convert_to_markdown(self) -> str:
         """Converts the web page's HTML content to Markdown format using the html2text library. This
         method allows for a text representation of the web page's content, which can be particularly
         useful for documentation or note-taking applications.
@@ -160,7 +161,7 @@ class WebNode(BaseNode):
         return h.handle(self.soup.prettify())
 
     @property
-    def url(self):
+    def url(self) -> str:
         """A property returning the URL of the web page this node represents. It provides direct
         access to the node's identifier, which in the context of a `WebNode`, is the URL.
 
@@ -172,7 +173,7 @@ class WebNode(BaseNode):
         return self.id
 
     @property
-    def domain(self):
+    def domain(self) -> str:
         """Extracts and returns the domain part of the web page's URL, facilitating operations that
         require domain-level granularity, such as restricting crawling activities to specific
         domains.
@@ -185,7 +186,7 @@ class WebNode(BaseNode):
         parsed_url = urlparse(self.url)
         return parsed_url.netloc
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Provides a human-readable string representation of the WebNode, primarily for debugging
         and logging purposes.
 
@@ -196,7 +197,7 @@ class WebNode(BaseNode):
         """
         return f"WebNode(id={self.id})"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Provides a detailed string representation of the WebNode, suitable for interactive use in
         the interpreter.
 
@@ -207,7 +208,7 @@ class WebNode(BaseNode):
         """
         return f"WebNode(id={self.id})"
 
-    def _repr_html_(self, index=None):
+    def _repr_html_(self, index: Optional[int] = None) -> str:
         """Generates an HTML representation of the WebNode for display in Jupyter notebooks or web
         interfaces , incorporating additional metadata such as the node's index, depth, parent, and
         domain for enhanced visualization.
@@ -237,7 +238,7 @@ class WebNode(BaseNode):
             f"</div>"
         )
 
-    def to_markdown(self):
+    def to_markdown(self) -> str:
         """Converts the node's content, specifically the web page's HTML content, to Markdown
         format. This method leverages the `convert_to_markdown` method to produce a Markdown
         representation of the HTML content, facilitating its use in documentation, notes, or any
@@ -255,7 +256,7 @@ class WebNode(BaseNode):
         >>> markdown_content = node.to_markdown()
         >>> print(markdown_content[:100])  # Print the first 100 characters of the Markdown content
         """
-        markdown_text = (
+        markdown_text: str = (
             self.convert_to_markdown()
         )  # Assuming this method returns Markdown formatted text
         return markdown_text
