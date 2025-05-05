@@ -74,7 +74,7 @@ class BaseCrawler(ABC):
         """
         pass
 
-    def crawl(self, start_node_id: str, max_depth: int = 1) -> 'BaseGraph':
+    def crawl(self, start_node_id: str, max_depth: int = 1, max_results: int = None) -> 'BaseGraph':
         """Performs the crawling process using Breadth-First Search (BFS).
 
         Starting from a specified node, this method explores neighboring nodes up to a given depth, creating a
@@ -86,6 +86,8 @@ class BaseCrawler(ABC):
             The identifier of the root node to start the crawling from.
         max_depth : int, optional
             The maximum depth to crawl. Default is 1.
+        max_results : int, optional
+            The maximum number of nodes to include in the results. Default is None (no limit).
 
         Returns
         -------
@@ -100,6 +102,10 @@ class BaseCrawler(ABC):
         crawl_subgraph: 'BaseGraph' = self.start_new_crawling_session(start_node_id)
 
         while len(visiting_nodes) > 0:
+            # Check if we've reached the maximum number of results
+            if max_results is not None and len(crawl_subgraph.all_nodes()) >= max_results:
+                break
+
             current_node, current_depth = visiting_nodes.popleft()
             new_depth: int = current_depth + 1
 
@@ -108,6 +114,10 @@ class BaseCrawler(ABC):
 
             for child_node in self.visit_node_neighborhood(current_node):
                 if child_node not in crawl_subgraph:
+                    # Check again before adding a new node
+                    if max_results is not None and len(crawl_subgraph.all_nodes()) >= max_results:
+                        break
+
                     child_node.depth = new_depth
                     child_node.parent = current_node
                     crawl_subgraph.add_node(child_node)

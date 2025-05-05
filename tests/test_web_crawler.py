@@ -100,3 +100,42 @@ def test_web_graph_add_edge(crawler):
     node2 = crawler.get_node("https://example.com/page2")
     graph.add_edge(node1, node2)
     assert graph.graph.has_edge(node1.id, node2.id)
+
+
+def test_crawl_with_max_results(crawler, web_node):
+    # Mock HTML content with multiple links
+    web_node.cache[web_node.url] = BeautifulSoup(
+        """<a href="/link1">Link 1</a> <a href="/link2">Link 2</a> <a href="/link3">Link 3</a>""",
+        "html.parser",
+    )
+
+    # Set up the crawler to use our mocked node
+    crawler.get_node = lambda url: web_node if url == web_node.url else WebNode(url)
+
+    # Test with max_results=2
+    graph = crawler.crawl(web_node.url, max_depth=1, max_results=2)
+    assert len(graph.all_nodes()) <= 2
+
+    # Test with no limit
+    graph = crawler.crawl(web_node.url, max_depth=1)
+    assert len(graph.all_nodes()) > 2
+
+
+def test_crawl_multiple_urls_with_max_results(crawler, web_node):
+    # Mock HTML content with multiple links
+    web_node.cache[web_node.url] = BeautifulSoup(
+        """<a href="/link1">Link 1</a> <a href="/link2">Link 2</a> <a href="/link3">Link 3</a>""",
+        "html.parser",
+    )
+
+    # Set up the crawler to use our mocked node
+    crawler.get_node = lambda url: web_node if url == web_node.url else WebNode(url)
+
+    # Test with max_results=3
+    urls = [web_node.url, "https://example.com/another"]
+    graph = crawler.crawl_multiple_urls(urls, max_depth=1, max_results=3)
+    assert len(graph.all_nodes()) <= 3
+
+    # Test with no limit
+    graph = crawler.crawl_multiple_urls(urls, max_depth=1)
+    assert len(graph.all_nodes()) > 3

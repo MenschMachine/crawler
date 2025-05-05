@@ -137,7 +137,7 @@ class WebCrawler(BaseCrawler):
         ]
         return allowed_neighbors
 
-    def crawl_multiple_urls(self, urls: List[str], max_depth: int = 1) -> WebGraph:
+    def crawl_multiple_urls(self, urls: List[str], max_depth: int = 1, max_results: int = None) -> WebGraph:
         """Performs a crawl starting from multiple URLs, building a single graph.
 
         This method iteratively crawls each URL in the provided list, adding the resulting subgraphs to a
@@ -149,6 +149,8 @@ class WebCrawler(BaseCrawler):
             A list of URLs to start crawling from.
         max_depth : int, optional
             The maximum depth to crawl from each starting URL. Defaults to 1.
+        max_results : int, optional
+            The maximum number of nodes to include in the results. Default is None (no limit).
 
         Returns
         -------
@@ -156,7 +158,20 @@ class WebCrawler(BaseCrawler):
             The combined `WebGraph` containing all nodes and edges explored from the provided URLs.
         """
         crawl_subgraph: WebGraph = WebGraph()
+        remaining_results = max_results
+
         for url in urls:
-            subgraph: WebGraph = self.crawl(url, max_depth=max_depth)
+            # If we've reached the maximum number of results, stop crawling
+            if max_results is not None and len(crawl_subgraph.all_nodes()) >= max_results:
+                break
+
+            # Calculate remaining results for this URL
+            if max_results is not None:
+                remaining_results = max_results - len(crawl_subgraph.all_nodes())
+                if remaining_results <= 0:
+                    break
+
+            subgraph: WebGraph = self.crawl(url, max_depth=max_depth, max_results=remaining_results)
             crawl_subgraph.graph.update(subgraph.graph)  # Merge subgraphs
+
         return crawl_subgraph
