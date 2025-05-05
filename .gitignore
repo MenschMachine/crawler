@@ -18,3 +18,7 @@ build/
 *.csv
 
 output
+venv
+.idea
+node_modules
+.aider*
