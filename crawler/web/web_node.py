@@ -89,7 +89,25 @@ class WebNode(BaseNode):
             try:
                 response = requests.get(self.url, headers=headers, timeout=5)
                 if response.status_code == 200:
-                    self.cache[self.url] = BeautifulSoup(response.text, "html.parser")  # Store in cache
+                    # Get the content based on the encoding
+                    content_encoding = response.headers.get('Content-Encoding', '').lower()
+
+                    # requests automatically handles gzip and deflate
+                    # For brotli, we need to handle it explicitly if it's not already handled
+                    if 'br' in content_encoding:
+                        try:
+                            import brotli
+                            content = brotli.decompress(response.content).decode('utf-8')
+                            logging.info(f"Successfully decompressed brotli content for {self.url}")
+                        except (ImportError, UnicodeDecodeError, brotli.error) as e:
+                            logging.warning(f"Failed to decompress brotli content: {e}")
+                            # Fall back to response.text which might already be decompressed by requests
+                            content = response.text
+                    else:
+                        # For gzip, deflate, or no compression, requests handles it automatically
+                        content = response.text
+
+                    self.cache[self.url] = BeautifulSoup(content, "html.parser")  # Store in cache
                     logging.info("Fetched and parsed %s webpage urls", str(self.url))
                 else:
                     logging.warning(
