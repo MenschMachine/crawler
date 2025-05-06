@@ -2,6 +2,7 @@ import logging
 from typing import List, Dict, Set, Optional, Any
 from urllib.parse import urljoin, urlparse
 
+import brotli
 import html2text
 import requests
 from bs4 import BeautifulSoup
@@ -97,7 +98,6 @@ class WebNode(BaseNode):
                     # For brotli, we need to handle it explicitly if it's not already handled
                     if 'br' in content_encoding:
                         try:
-                            import brotli
                             content = brotli.decompress(response.content).decode('utf-8')
                             logging.info(f"Successfully decompressed brotli content for {self.url}")
                         except (ImportError, UnicodeDecodeError, brotli.error) as e:
