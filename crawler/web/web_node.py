@@ -1,9 +1,10 @@
 import logging
-import requests
-import html2text
-from bs4 import BeautifulSoup
+from typing import List, Dict, Set, Optional, Any
 from urllib.parse import urljoin, urlparse
-from typing import List, Dict, Set, Optional, Any, Union
+
+import html2text
+import requests
+from bs4 import BeautifulSoup
 
 from ..base.base_node import BaseNode
 
@@ -100,7 +101,7 @@ class WebNode(BaseNode):
                             content = brotli.decompress(response.content).decode('utf-8')
                             logging.info(f"Successfully decompressed brotli content for {self.url}")
                         except (ImportError, UnicodeDecodeError, brotli.error) as e:
-                            logging.warning(f"Failed to decompress brotli content: {e}")
+                            logging.error(f"Failed to decompress brotli content", exc_info=True)
                             # Fall back to response.text which might already be decompressed by requests
                             content = response.text
                     else:
