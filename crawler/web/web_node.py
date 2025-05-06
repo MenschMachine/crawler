@@ -101,7 +101,7 @@ class WebNode(BaseNode):
                             content = brotli.decompress(response.content).decode('utf-8')
                             logging.info(f"Successfully decompressed brotli content for {self.url}")
                         except (ImportError, UnicodeDecodeError, brotli.error) as e:
-                            logging.error(f"Failed to decompress brotli content", exc_info=True)
+                            logging.warning(f"Failed to decompress brotli content: {e}")
                             # Fall back to response.text which might already be decompressed by requests
                             content = response.text
                     else:
